@@ -1,6 +1,6 @@
-# CBTCIP
-We are creating a Todo List with simple and advance features .
-it will the responsive , dynamic and ui friendly
+# TodoMon
+Welcome to my to-do list! This is where I organize my tasks, goals, and daily activities to stay productive and focused. By keeping track of everything here, I can prioritize my time effectively and ensure nothing important gets overlooked. Let's get things done, one task at a time!
+We are creating a Todo List with simple and advance features . it is responsive , dynamic and ui friendly .
 
 # This is the latest design of out web application
 
