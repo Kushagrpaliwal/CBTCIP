@@ -1,7 +1,11 @@
+import Signup from '@/components/Signup'
+
 
 const page = () => {
   return (
-    <div>page</div>
+    <>
+    <Signup/>
+    </>
   )
 }
 

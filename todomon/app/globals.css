@@ -4,7 +4,7 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
 }
 
@@ -31,4 +31,24 @@ body {
     text-wrap: balance;
   }
 }
+
+.creds input::placeholder{
+  color: gray;
+  font-weight:10px;
+  font-size: 22px;
+}
+
+.creds input{
+  font-size: 20px;
+  font-weight:normal;
+}
+
+.creds input:focus::placeholder {
+  color: gray;
+  position: relative;
+  bottom: 22px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
 

@@ -1,7 +1,8 @@
+import Maincontent from '@/components/Maincontent'
 
 const page = () => {
   return (
-    <div>page</div>
+    <div><Maincontent/></div>
   )
 }
 
