@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, createContext } from "react";
+import { useState, useEffect, useRef} from "react";
 import Image from 'next/image';
 import { db, auth } from '@/constants/firebaseConfig';
 import { collection, addDoc, getDocs, deleteDoc, doc, query } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-export const DeletedTasksContext = createContext([]);
 
-const Todolist = ({ setDeletedEntries }) => {
+const Todolist = () => {
   const [textTitle, setTextTitle] = useState('');
   const [textDes, setTextDes] = useState('');
   const [entries, setEntries] = useState([]);
@@ -21,7 +20,6 @@ const Todolist = ({ setDeletedEntries }) => {
       if (currentUser) {
         setUser(currentUser);
         fetchEntries(currentUser.uid);
-        fetchDeletedEntries(currentUser.uid);
       }
     });
     return () => unsubscribe();
@@ -30,7 +28,6 @@ const Todolist = ({ setDeletedEntries }) => {
   useEffect(() => {
     if (user) {
       fetchEntries(user.uid);
-      fetchDeletedEntries(user.uid);
     }
   }, [user]);
 
@@ -51,26 +48,12 @@ const Todolist = ({ setDeletedEntries }) => {
   }, [textDes]);
 
   const fetchEntries = async (uid) => {
-    try {
-      const q = query(collection(db, "todolist", uid, "entries"));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setEntries(data);
-    } catch (error) {
-      console.error("Error fetching entries: ", error);
-    }
+    const q = query(collection(db, "todolist", uid, "entries"));
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setEntries(data);
   };
 
-  const fetchDeletedEntries = async (uid) => {
-    try {
-      const q = query(collection(db, "deletedTask", uid, "entries"));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setDeletedEntries(data);
-    } catch (error) {
-      console.error("Error fetching deleted entries: ", error);
-    }
-  };
 
   const handleChangeTitle = (e) => {
     setTextTitle(e.target.value);
@@ -89,8 +72,8 @@ const Todolist = ({ setDeletedEntries }) => {
         setTextTitle('');
         setTextDes('');
       } catch (error) {
-        console.error("Error adding new entry: ", error);
-        alert("Error adding new entry: " + error.message);
+        console.log(error);
+        alert(error);
       }
     }
   };
@@ -104,18 +87,19 @@ const Todolist = ({ setDeletedEntries }) => {
     try {
       const deleteEntry = entries.find(entry => entry.id === id);
       await deleteDoc(doc(db, "todolist", user.uid, "entries", id));
-      await addDoc(collection(db, "deletedTask", user.uid, "entries"), deleteEntry);
+      await addDoc(collection(db,"completed",user.uid ,"entries"),deleteEntry)
       setEntries(prev => prev.filter(entry => entry.id !== id));
-      setDeletedEntries(prev => [...prev, deleteEntry]);
     } catch (error) {
-      console.error("Error deleting entry: ", error);
-      alert("Error deleting entry: " + error.message);
+      alert(error);
+      console.log(error);
     }
   };
 
   return (
     <div className="h-auto">
-      <h1 className="ml-[50px] font-bold text-3xl">TodoList</h1>
+      <h1 className="ml-[50px] font-bold text-3xl">
+        TodoList
+      </h1>
       <div className="ml-[50px] h-auto w-[85%] border border-gray-300 rounded-xl mt-3 p-5">
         <textarea
           type="text"
@@ -140,18 +124,8 @@ const Todolist = ({ setDeletedEntries }) => {
           rows={1}
         />
         <div className="w-full mt-5">
-          <button
-            className="p-2 bg-green1 w-[60px] h-[35px] text-center text-sm rounded-lg text-white mr-2"
-            onClick={newList}
-          >
-            Add
-          </button>
-          <button
-            className="p-2 bg-gray-100 w-[60px] h-[35px] text-center text-sm rounded-lg text-black mr-2"
-            onClick={resetForm}
-          >
-            Reset
-          </button>
+          <button className="p-2 bg-green1 w-[60px] h-[35px] text-center text-sm rounded-lg text-white mr-2" onClick={newList}>Add</button>
+          <button className="p-2 bg-gray-100 w-[60px] h-[35px] text-center text-sm rounded-lg text-black mr-2" onClick={resetForm}>Reset</button>
         </div>
       </div>
 
@@ -160,8 +134,12 @@ const Todolist = ({ setDeletedEntries }) => {
           <div key={entry.id}>
             <div className="flex flex-row">
               <div className="w-full">
-                <div className="text-lg">{entry.textTitle}</div>
-                <div className="text-sm">{entry.textDes}</div>
+                <div className="text-lg">
+                  {entry.textTitle}
+                </div>
+                <div className="text-sm">
+                  {entry.textDes}
+                </div>
               </div>
               <div>
                 <button onClick={() => deleteItems(entry.id)}>

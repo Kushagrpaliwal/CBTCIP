@@ -1,68 +1,77 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { DeletedTasksContext } from './Todolist'; // Import the context
-import { db, auth } from '@/constants/firebaseConfig';
-import { collection, deleteDoc,doc,getDocs } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import React, { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, deleteDoc, getDocs, doc } from 'firebase/firestore';
+import { db, auth } from '../../constants/firebaseConfig';
 
-const Completed = ({ setDeletedEntries }) => {
-  const deletedEntries = useContext(DeletedTasksContext); 
+const Completed = () => {
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        fetchDeletedEntries(currentUser.uid);
+        fetchCompletedTasks(currentUser.uid); // Fetch tasks after user is set
       }
     });
+
     return () => unsubscribe();
   }, []);
 
-  const fetchDeletedEntries = async (uid) => {
-    const querySnapshot = await getDeletedEntries(uid);
-    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setDeletedEntries(data);
-  };
-
-  const getDeletedEntries = async (uid) => {
-    const deletedTasksRef = collection(db, "deletedTask", uid, "entries");
-    return await getDocs(deletedTasksRef);
-  };
-
-  const deletePermanently = async (id) => {
+  const fetchCompletedTasks = async (userId) => {
+    setLoading(true);
     try {
-      await deleteDoc(doc(db, "deletedTask", user.uid, "entries", id));
-      setDeletedEntries(prev => prev.filter(entry => entry.id !== id));  
-    } catch(error) {
-      alert(error);
-      console.log(error);
+      const querySnapshot = await getDocs(collection(db, `completed/${userId}/entries`));
+      const tasks = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setCompletedTasks(tasks);
+    } catch (error) {
+      console.error('Error fetching completed tasks:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const deleteTask = async (id) => {
+    if (!user) return;
+    const path = `completed/${user.uid}/entries/${id}`;
+    try {
+      console.log(`Attempting to delete document at path: ${path}`);
+      await deleteDoc(doc(db, path));
+      console.log('Document deleted successfully');
+      setCompletedTasks(prev => prev.filter(task => task.id !== id)); // Remove from state
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
+  if (loading) {
+    return <div className="ml-[50px]">Loading...</div>;
+  }
+
   return (
-    <div className='h-auto'>
+    <div className='h-[100%]'>
       <h1 className="ml-[50px] font-bold text-3xl">Completed Tasks</h1>
-      <div className="ml-[50px] w-[85%] h-auto mt-5 mb-[20px] p-5">
-        {deletedEntries.map((entry) => (
-          <div key={entry.id}>
-            <div className="flex flex-row">
-              <div className="w-full">
-                <div className="text-lg">
-                  {entry.textTitle}
+      <div className="ml-[50px] w-[85%] h-auto mt-5 mb-[20px] p-5 bg-gray-100 rounded-lg">
+        {completedTasks.length > 0 ? (
+          <ul>
+            {completedTasks.map(task => (
+              <li key={task.id} className="mb-4 p-4 bg-white shadow-md rounded-md">
+                <div className='flex flex-row'>
+                  <div className='w-full'>
+                    <div className="font-semibold">{task.textTitle}</div>
+                    <div className="text-sm text-gray-500">{task.textDes}</div>
+                  </div>
                 </div>
-                <div className="text-sm">
-                  {entry.textDes}
-                </div>
-              </div>
-              <div>
-                <button onClick={() => deletePermanently(entry.id)} className='text-xs rounded-lg p-2 bg-green1 drop-shadow-md hover:drop-shadow-xl text-white w-24'>
-                  Delete Permanently
-                </button>
-              </div>
-            </div>
-            <hr className="border-gray-300 mt-2 mb-2" />
-          </div>
-        ))}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-gray-500">No completed tasks.</div>
+        )}
       </div>
     </div>
   );
