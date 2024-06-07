@@ -137,7 +137,7 @@ const Todolist = () => {
                 <div className="text-lg">
                   {entry.textTitle}
                 </div>
-                <div className="text-sm">
+                <div className="text-sm text-gray-500">
                   {entry.textDes}
                 </div>
               </div>

@@ -105,9 +105,9 @@ const Notes = () => {
           <button className="p-2 bg-gray-100 w-[60px] h-[35px] text-center text-sm rounded-lg text-black mr-2" onClick={resetForm}>Reset</button>
         </div>
       </div>
-      <div className="flex flex-wrap mt-8 ">
+      <div className="flex flex-wrap mt-8 w-[90%] notes-container">
         {entries.map((entry) => (
-          <div key={entry.id} className={`w-[25%] m-2 p-4 rounded-lg border border-gray-300 ${expandedNoteId === entry.id ? 'h-auto' : 'h-[50px] overflow-hidden'}`} onClick={() => toggleExpand(entry.id)}>
+          <div key={entry.id} className={`note m-2 p-4 rounded-lg border border-gray-300 ${expandedNoteId === entry.id ? 'h-auto' : 'h-[50px] overflow-hidden'}`} onClick={() => toggleExpand(entry.id)}>
             <p>{entry.textTitle}</p>
             {expandedNoteId === entry.id && ( // Render delete button only if note is expanded
               <button onClick={(e) => { e.stopPropagation(); deleteItems(entry.id); }} className="p-2 bg-green1 text-xs text-white rounded-lg mt-2">

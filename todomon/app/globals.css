@@ -52,3 +52,35 @@ body {
 }
 
 
+/* styles/globals.css */
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(35%) sepia(60%) saturate(300%) hue-rotate(90deg) brightness(95%) contrast(90%);
+}
+
+
+
+/* Firefox support */
+input[type="datetime-local"]::-moz-datetime-edit {
+  color: #32CD32; /* Change this to your desired color */
+}
+
+.notes-container {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 25%; /* Limiting the width to 25% */
+}
+
+.note {
+  flex-basis: 100%; /* Initially taking full width */
+  margin: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  transition: flex-basis 0.3s ease; /* Smooth transition for expansion */
+}
+
+.note.expand {
+  flex-basis: 100%; /* Taking full width when expanded */
+}

@@ -1,21 +1,20 @@
-// components/Calender.js
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import Script from 'next/script';
 import { format, addHours } from 'date-fns';
 
 const CLIENT_ID = "749403399063-rdehigpqs00adk16ihjbnrbpl1k22iar.apps.googleusercontent.com";
-const API_KEY = "AIzaSyCLaIWEfhpnZVv9nUj57aNjNlhSnTHieao";
+const API_KEY = process.env.api;
 const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
 const SCOPES = "https://www.googleapis.com/auth/calendar";
 let tokenClient;
 let gapiInited = false;
 let gisInited = false;
 
-const Calender = () => {
+const Calendar = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [events, setEvents] = useState([]);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
     window.gapiLoaded = () => {
@@ -26,7 +25,12 @@ const Calender = () => {
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
-        callback: "", // defined later
+        callback: (tokenResponse) => {
+          if (tokenResponse.error !== undefined) {
+            throw tokenResponse;
+          }
+          setToken(tokenResponse.access_token);
+        },
       });
       gisInited = true;
     };
@@ -37,20 +41,25 @@ const Calender = () => {
         discoveryDocs: [DISCOVERY_DOC],
       });
       gapiInited = true;
+      fetchUpcomingEvents();
     };
 
     const createGoogleEvent = (eventDetails) => {
-      tokenClient.callback = async (resp) => {
+      if (!gapiInited || !gisInited) return;
+
+      const callback = async (resp) => {
         if (resp.error !== undefined) {
           throw resp;
         }
+        setToken(gapi.client.getToken());
         await scheduleEvent(eventDetails);
       };
 
       if (gapi.client.getToken() === null) {
+        tokenClient.callback = callback;
         tokenClient.requestAccessToken({ prompt: "consent" });
       } else {
-        tokenClient.requestAccessToken({ prompt: "" });
+        callback({}); // Empty response signifies the token is already set
       }
     };
 
@@ -121,8 +130,10 @@ const Calender = () => {
     window.fetchUpcomingEvents = fetchUpcomingEvents;
     window.deleteEvent = deleteEvent;
 
-    // Fetch events when the component mounts
-    fetchUpcomingEvents();
+    // Initialize the Google API client and fetch events
+    if (gapiInited) {
+      fetchUpcomingEvents();
+    }
   }, []);
 
   const scheduleMeeting = (data) => {
@@ -142,40 +153,49 @@ const Calender = () => {
   };
 
   return (
-    <div className="card">
-      <p id="title">Book Appointment</p>
+    <div className="ml-[50px] card">
+      <p className='font-bold text-3xl mb-[20px]'>Events</p>
+      <p className='font-light'>Here you can add events directly to your google calendar and can delete the events too .</p>
+      <div className='mt-[35px] p-8 h-auto w-[85%] border border-gray-300 rounded-xl mb-[35px]'>
       <form onSubmit={handleSubmit(scheduleMeeting)}>
         <div className="form-group">
-          <label htmlFor="summary">Meeting Summary</label>
           <input
             type="text"
             id="summary"
+            placeholder='Subject'
+            className='border-none focus:outline-none w-full  resize-none overflow-hidden mb-2'
             {...register("summary", { required: true })}
           />
-          {errors.summary && <span>This field is required</span>}
+          {errors.summary && <span className='italic font-light'>This field is required</span>}
         </div>
         <div className="form-group">
-          <label htmlFor="appointmentTime">Meeting Time</label>
-          <input
-            type="datetime-local"
-            id="appointmentTime"
-            {...register("appointmentTime", { required: true })}
-          />
-          {errors.appointmentTime && <span>This field is required</span>}
-        </div>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
           <input
             type="email"
             id="email"
-            className="form-control"
+            placeholder='Email'
+            className='form-control border-none focus:outline-none w-full  resize-none overflow-hidden mb-2'
             {...register("email", { required: true, pattern: /^\S+@\S+$/i })}
           />
-          {errors.email && <span>Please enter a valid email</span>}
+          {errors.email && <span className='italic font-light'>Please enter a valid email</span>}
+        </div>
+        <hr className="border-gray-300 mb-3 " />
+        <div className="form-group">
+          <label htmlFor="appointmentTime" className='font-light'>Event Date & Time -:</label>
+          <input
+            type="datetime-local"
+            id="appointmentTime"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm font-light focus:outline-none focus:border-green1"
+            {...register("appointmentTime", { required: true })}
+          />
+          {errors.appointmentTime && <span className='italic font-light'>This field is required</span>}
         </div>
         <br />
-        <button type="submit" id="schedule-button">Schedule Appointment</button>
+        <button 
+          type="submit" 
+          id="schedule-button" 
+          className='rounded-lg p-2 mr-2 bg-green1 drop-shadow-md hover:drop-shadow-xl text-white'>Schedule Appointment</button>
       </form>
+      </div>
       <Script
         src="https://apis.google.com/js/api.js"
         strategy="afterInteractive"
@@ -186,15 +206,17 @@ const Calender = () => {
         strategy="afterInteractive"
         onLoad={() => window.gisLoaded()}
       />
-      <div>
-        <h2>Upcoming Events</h2>
+      <div className='p-5 font-light'>
+        <h2 className='font-bold text-lg mb-5 '>Upcoming Events</h2>
         <ul>
           {events.map((event) => (
             <li key={event.id}>
-              <p>Summary: {event.summary}</p>
+              <p>Subject: {event.summary}</p>
               <p>Start: {event.start.dateTime || event.start.date}</p>
               <p>End: {event.end.dateTime || event.end.date}</p>
-              <button onClick={() => window.deleteEvent(event.id)}>Delete Event</button>
+              <button 
+                onClick={() => window.deleteEvent(event.id)}  
+                className='rounded-lg p-2 mr-2 bg-green1 drop-shadow-md hover:drop-shadow-xl text-white mt-3 mb-3'>Delete Event</button>
             </li>
           ))}
         </ul>
@@ -203,4 +225,4 @@ const Calender = () => {
   );
 };
 
-export default Calender;
+export default Calendar;

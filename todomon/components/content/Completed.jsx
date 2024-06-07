@@ -55,17 +55,18 @@ const Completed = () => {
   return (
     <div className='h-[100%]'>
       <h1 className="ml-[50px] font-bold text-3xl">Completed Tasks</h1>
-      <div className="ml-[50px] w-[85%] h-auto mt-5 mb-[20px] p-5 bg-gray-100 rounded-lg">
+      <div className="ml-[50px] w-[85%] h-auto mt-5 mb-[20px] p-5  rounded-lg">
         {completedTasks.length > 0 ? (
           <ul>
             {completedTasks.map(task => (
-              <li key={task.id} className="mb-4 p-4 bg-white shadow-md rounded-md">
+              <li key={task.id} className="">
                 <div className='flex flex-row'>
                   <div className='w-full'>
-                    <div className="font-semibold">{task.textTitle}</div>
+                    <div className="text-lg">{task.textTitle}</div>
                     <div className="text-sm text-gray-500">{task.textDes}</div>
                   </div>
                 </div>
+                <hr className="border-gray-300 mt-2 mb-2" />
               </li>
             ))}
           </ul>

@@ -77,7 +77,7 @@ const Maincontent = () => {
                 <Image src="/note.svg" alt="logo" width={20} height={5} className='ml-2 mr-2' /> Completed Tasks </li>
               <li className='flex h-[40px] items-center cursor-pointer hover:bg-green1 hover:rounded-lg hover:text-white'
                 onClick={() => setActiveComp('Calender')}>
-                <Image src="/calender.svg" alt="logo" width={20} height={5} className=' ml-2 mr-2' /> Calender </li>
+                <Image src="/calender.svg" alt="logo" width={20} height={5} className=' ml-2 mr-2' /> Events </li>
               <li className='flex h-[40px] items-center cursor-pointer hover:bg-green1 hover:rounded-lg hover:text-white'
                 onClick={() => setActiveComp('Notes')}>
                 <Image src="/notes.png" alt="logo" width={20} height={5} className='ml-2 mr-2' /> Notes </li>
